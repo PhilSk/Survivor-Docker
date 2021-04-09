@@ -1,17 +1,24 @@
-FROM debian:testing
+FROM ubuntu:18.04
 
-ENV HOME /root
-RUN apt-get update && apt-get upgrade
-RUN apt-get install -y zsh git tmux
+RUN apt-get update
 
-################## BEGIN INSTALLATION ######################
-RUN git clone git://github.com/bwithem/oh-my-zsh.git ~/.oh-my-zsh \
-    && cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc \
-    && chsh -s /bin/zsh
-RUN sed -i -E "s/^plugins=\((.*)\)$/plugins=(\1 tmux)/" ~/.zshrc
-WORKDIR /root
+# Colors and italics for tmux
+COPY xterm-256color-italic.terminfo /root
+RUN tic /root/xterm-256color-italic.terminfo
+ENV TERM=xterm-256color-italic
 
-RUN echo "set -g prefix C-a; bind C-a send-prefix; unbind C-b; bind - split-window -h \; split-window -h \; select-pane -t 0 \;  split-window -h \; select-pane -t 3 \;  split-window -v \; select-pane -t 2 \; split-window -v \; select-pane -t 1 \; split-window -v \; select-pane -t 0 \; split-window -v \; select-pane -t 0 \; ; bind = setw synchronize-panes" > .tmux.conf
+# Common packages
+RUN apt-get update && apt-get install -y \
+      curl \
+      git  \
+      tmux \
+      wget \
+      zsh 
 
-CMD ["tmux source .tmux.conf"]
+RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+RUN chsh -s /usr/bin/zsh
+
+RUN curl https://raw.githubusercontent.com/PhilSk/Survivor-Docker/master/.tmux.conf -s -L -o - > /etc/tmux.conf
+
+CMD ["tmux source /etc/tmux.conf"]
 CMD ["zsh"]
