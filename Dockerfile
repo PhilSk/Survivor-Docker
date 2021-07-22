@@ -1,11 +1,6 @@
-FROM ubuntu:18.04
+FROM nvcr.io/nvidia/pytorch:21.03-py3
 
 RUN apt-get update
-
-# Colors and italics for tmux
-COPY xterm-256color-italic.terminfo /root
-RUN tic /root/xterm-256color-italic.terminfo
-ENV TERM=xterm-256color-italic
 
 # Common packages
 RUN apt-get update && apt-get install -y \
